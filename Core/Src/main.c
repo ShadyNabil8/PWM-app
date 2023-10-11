@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "../../Drivers/ECAL_Driver/inc/lcd.h"
+#include <math.h>
 
 /* USER CODE END Includes */
 
@@ -58,6 +59,7 @@ static void MX_ADC1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint16_t AD_RES = 0;
+uint16_t AD_RES_Old = 0;
 
 /* USER CODE END 0 */
 
@@ -104,10 +106,15 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
+		HAL_ADC_Start(&hadc1);
+		HAL_ADC_PollForConversion(&hadc1, 1);
+		AD_RES = HAL_ADC_GetValue(&hadc1);
+		if (abs(AD_RES - AD_RES_Old) >= 5) {
+			LCD_Puts_int(9, 1, (((float) AD_RES / 4096) * 100));
+			AD_RES_Old = AD_RES;
+		}
+		HAL_Delay(5);
 		/* USER CODE END WHILE */
-		HAL_ADC_Start_IT(&hadc1);
-		LCD_Puts_int(9, 1, (int) (((float) AD_RES / 4096.0) * 100));
-		HAL_Delay(1000);
 
 		/* USER CODE BEGIN 3 */
 	}
@@ -236,9 +243,6 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-	AD_RES = HAL_ADC_GetValue(&hadc1);
-}
 
 /* USER CODE END 4 */
 
