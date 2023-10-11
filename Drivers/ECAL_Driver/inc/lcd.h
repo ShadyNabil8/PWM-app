@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include "lcd_cfg.h"
-#include <string.h>
+#include <stdlib.h>
 
 void LCD_Init(void);
 void LCD_DisplayOn(void);

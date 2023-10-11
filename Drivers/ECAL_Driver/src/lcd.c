@@ -158,6 +158,7 @@ void LCD_Puts(uint8_t x, uint8_t y, char *str) {
 		}
 		str++;
 	}
+	LCD_Data(' ');
 }
 //############################################################################################
 void LCD_Puts_int(uint8_t x, uint8_t y, int num) {
