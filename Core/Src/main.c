@@ -15,6 +15,8 @@
  *
  ******************************************************************************
  */
+#define DUTY_CYCLE ((int)(((float) AD_RES / 4096)*14)+0)
+#define SERVO_ANGLE (int)(((float)DUTY_CYCLE/13)*180)
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -100,7 +102,8 @@ int main(void) {
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 	LCD_Init();
 	LCD_Clear();
-	LCD_Puts(5, 0, "ADC Value(%)");
+	LCD_Puts(0, 0, "Servo Angle: ");
+	LCD_Puts(0, 1, "Duty Cycle : ");
 	//LCD_Puts(0, 1, "U Have Pure Heart");
 
 	/* USER CODE END 2 */
@@ -111,12 +114,14 @@ int main(void) {
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1, 1);
 		AD_RES = HAL_ADC_GetValue(&hadc1);
-		if (abs(AD_RES - AD_RES_Old) >= 5) {
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, (int)(((float) AD_RES / 4096) * 65536));
-			LCD_Puts_int(9, 1, (((float) AD_RES / 4096) * 100));
-			AD_RES_Old = AD_RES;
-		}
-		HAL_Delay(5);
+		//if (abs(AD_RES - AD_RES_Old) >= 5) {
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,
+				(int)((float)DUTY_CYCLE/100 * (20000-1) ));
+		LCD_Puts_int(13, 0, (int) (SERVO_ANGLE));
+		LCD_Puts_int(13, 1, (int) (DUTY_CYCLE));
+		//AD_RES_Old = AD_RES;
+		//}
+		HAL_Delay(1);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -226,11 +231,11 @@ static void MX_TIM2_Init(void) {
 
 	/* USER CODE END TIM2_Init 1 */
 	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 0;
+	htim2.Init.Prescaler = 8 - 1;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 32768;
+	htim2.Init.Period = 20000 - 1;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
 		Error_Handler();
 	}
@@ -248,7 +253,7 @@ static void MX_TIM2_Init(void) {
 		Error_Handler();
 	}
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 32768;
+	sConfigOC.Pulse = 10000;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1)
@@ -279,7 +284,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB,
-			GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8,
+	GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : PB3 */
